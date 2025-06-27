@@ -1,54 +1,15 @@
-using NUnit.Framework;
-using dotnetapp.Controllers;
-using dotnetapp.Models;
-using Microsoft.AspNetCore.Mvc;
-using System;
+using System.Numerics;
+using Microsoft.Data.SqlClient;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+using NUnit.Framework;
 
-namespace EmployeeApp.Tests
+namespace TestProject
 {
-    [TestFixture]
-    public class EmployeeControllerTests
+    public class Tests
     {
-        [Test]
-        public void TestCreatePostMethodReturnsIActionResult()
-        {
-            Assembly assembly = Assembly.Load("dotnetapp");
 
-            // Get the types
-            Type EmployeeControllerType = assembly.GetType("dotnetapp.Controllers.EmployeeController");
-            Type EmployeeType = assembly.GetType("dotnetapp.Models.Employee");
-            var controller = Activator.CreateInstance(EmployeeControllerType);
-            MethodInfo createPostMethod = EmployeeControllerType.GetMethod("Create", new Type[] { EmployeeType });
-
-            // Act
-            var employeeInstance = Activator.CreateInstance(EmployeeType);
-            var result = createPostMethod.Invoke(controller, new object[] { employeeInstance });
-            Console.WriteLine(result);
-
-            // Assert
-            Assert.IsInstanceOf<IActionResult>(result, "Create (POST) method should return an IActionResult.");
-        }
-
-
-        [Test]
-        public void Test_CreateViewFile_Exists()
-        {
-            string indexPath = Path.Combine(@"/home/coder/project/workspace/dotnetapp/Views/Employee", "Create.cshtml");
-            bool indexViewExists = File.Exists(indexPath);
-
-            Assert.IsTrue(indexViewExists, "Create.cshtml view file does not exist.");
-        }
-
-        [Test]
-        public void Test_IndexViewFile_Exists()
-        {
-            string indexPath = Path.Combine(@"/home/coder/project/workspace/dotnetapp/Views/Employee", "Index.cshtml");
-            bool indexViewExists = File.Exists(indexPath);
-
-            Assert.IsTrue(indexViewExists, "Index.cshtml view file does not exist.");
-        }
-
+        // Test to check whether Employee Models Class exists
         [Test]
         public void Employee_Models_ClassExists()
         {
@@ -199,6 +160,7 @@ namespace EmployeeApp.Tests
             Assert.AreEqual(typeof(string), expectedType, "Property Address in Employee class is not of type string");
         }
 
+        // Test to check whether EmployeeController Controllers Class exists
         [Test]
         public void EmployeeController_Controllers_ClassExists()
         {
@@ -221,22 +183,61 @@ namespace EmployeeApp.Tests
             Assert.IsNotNull(methodInfo, "Method Index does not exist in EmployeeController class");
         }
 
-        // Test to Check EmployeeController Controllers Method Create Exists
+        // Test to Check EmployeeController Controllers Method Index Returns ActionResult
         [Test]
-        public void EmployeeController_Create_MethodExists()
+        public void EmployeeController_Index_MethodReturns_ActionResult()
         {
             string assemblyName = "dotnetapp";
             string typeName = "dotnetapp.Controllers.EmployeeController";
             Assembly assembly = Assembly.Load(assemblyName);
             Type EmployeeControllerType = assembly.GetType(typeName);
-            Type employeeType = assembly.GetType("dotnetapp.Models.Employee");
+            MethodInfo methodInfo = EmployeeControllerType.GetMethod("Index");
+            Assert.AreEqual(typeof(ActionResult), methodInfo.ReturnType, "Method Index in EmployeeController class is not of type ActionResult");
+        }
 
-            // Specify the parameter types and modifiers
-            Type[] parameterTypes = { employeeType };
-            MethodInfo methodInfo = EmployeeControllerType.GetMethod("Create", parameterTypes);
+        // Test to Check EmployeeController Controllers Method Create Exists
+        [Test]
+        public void EmployeeController_Create_Method_with_NoParams_Exists()
+        {
+            string assemblyName = "dotnetapp";
+            string typeName = "dotnetapp.Controllers.EmployeeController";
+            Assembly assembly = Assembly.Load(assemblyName);
+            Type EmployeeControllerType = assembly.GetType(typeName);
+            MethodInfo methodInfo = EmployeeControllerType.GetMethod("Create", Type.EmptyTypes);
             Assert.IsNotNull(methodInfo, "Method Create does not exist in EmployeeController class");
         }
 
+        // Test to Check EmployeeController Controllers Method Create with no parameter Returns ActionResult
+        [Test]
+        public void EmployeeController_Create_Method_with_NoParams_Returns_ActionResult()
+        {
+            string assemblyName = "dotnetapp";
+            string typeName = "dotnetapp.Controllers.EmployeeController";
+            Assembly assembly = Assembly.Load(assemblyName);
+            Type EmployeeControllerType = assembly.GetType(typeName);
+            MethodInfo methodInfo = EmployeeControllerType.GetMethod("Create", Type.EmptyTypes);
+            Assert.AreEqual(typeof(ActionResult), methodInfo.ReturnType, "Method Create in EmployeeController class is not of type ActionResult");
+        }
+
+        // Test to Check EmployeeController Controllers Method Create with no parameter Returns ActionResult
+        [Test]
+        public void EmployeeController_Create_Method_with_Employee_Parameter_Returns_ActionResult()
+        {
+            string assemblyName = "dotnetapp";
+            string typeName = "dotnetapp.Controllers.EmployeeController";
+            string typeName1 = "dotnetapp.Models.Employee";
+            Assembly assembly = Assembly.Load(assemblyName);
+            Type EmployeeControllerType = assembly.GetType(typeName);
+            Type EmployeeModelType = assembly.GetType(typeName1);
+            MethodInfo methodInfo = EmployeeControllerType.GetMethod("Create", new[] { EmployeeModelType });
+            Assert.AreEqual(typeof(ActionResult), methodInfo.ReturnType, "Method Create in EmployeeController class is not of type ActionResult");
+            object instanceOfController = Activator.CreateInstance(EmployeeControllerType);
+            object instanceOfModel = Activator.CreateInstance(EmployeeModelType);
+            object result = methodInfo.Invoke(instanceOfController, new object[] { instanceOfModel });
+            Assert.IsNotNull(result);
+        }
+
+        // Test to Check EmployeeController Controllers Method Search Exists
         [Test]
         public void EmployeeController_Search_MethodExists()
         {
@@ -244,67 +245,78 @@ namespace EmployeeApp.Tests
             string typeName = "dotnetapp.Controllers.EmployeeController";
             Assembly assembly = Assembly.Load(assemblyName);
             Type EmployeeControllerType = assembly.GetType(typeName);
-            Type employeeType = assembly.GetType("dotnetapp.Models.Employee");
-
-            // Specify the parameter types and modifiers
-            Type[] parameterTypes = { typeof(string) };
-            MethodInfo methodInfo = EmployeeControllerType.GetMethod("Search", parameterTypes);
-            Assert.IsNotNull(methodInfo, "Method Create does not exist in EmployeeController class");
-
-
-            // Create an instance of EmployeeController (assuming it has a parameterless constructor)
-            object employeeControllerInstance = Activator.CreateInstance(EmployeeControllerType);
-
-            // Specify the argument values to pass to the Search method
-            object[] arguments = { "YourSearchString" }; // Replace "YourSearchString" with the actual search string
-
-            // Invoke the Search method
-            object result = methodInfo.Invoke(employeeControllerInstance, arguments);
-
-            Assert.IsNotNull(result, "Search method returned null");
+            MethodInfo methodInfo = EmployeeControllerType.GetMethod("Search");
+            Assert.IsNotNull(methodInfo, "Method Search does not exist in EmployeeController class");
         }
 
-        // Test to Check EmployeeController Controllers Method Edit Exists
-        //[Test]
-        //public void EmployeeController_Edit_MethodExists()
-        //{
-        //    string assemblyName = "dotnetapp";
-        //    string typeName = "dotnetapp.Controllers.EmployeeController";
-        //    Assembly assembly = Assembly.Load(assemblyName);
-        //    Type EmployeeControllerType = assembly.GetType(typeName);
-        //    MethodInfo methodInfo = EmployeeControllerType.GetMethod("Edit", new Type[] { typeof(int) });
-        //    Assert.IsNotNull(methodInfo, "Method Edit does not exist in EmployeeController class");
-        //}
+        // Test to Check EmployeeController Controllers Method Search Returns ActionResult
+        [Test]
+        public void EmployeeController_Search_MethodReturns_ActionResult()
+        {
+            string assemblyName = "dotnetapp";
+            string typeName = "dotnetapp.Controllers.EmployeeController";
+            Assembly assembly = Assembly.Load(assemblyName);
+            Type EmployeeControllerType = assembly.GetType(typeName);
+            MethodInfo methodInfo = EmployeeControllerType.GetMethod("Search");
+            Assert.AreEqual(typeof(ActionResult), methodInfo.ReturnType, "Method Search in EmployeeController class is not of type ActionResult");
+        }
 
-        //// Test to Check EmployeeController Controllers Method Delete Exists
-        //[Test]
-        //public void EmployeeController_Delete_MethodExists()
-        //{
-        //    string assemblyName = "dotnetapp";
-        //    string typeName = "dotnetapp.Controllers.EmployeeController";
-        //    Assembly assembly = Assembly.Load(assemblyName);
-        //    Type EmployeeControllerType = assembly.GetType(typeName);
-        //    MethodInfo methodInfo = EmployeeControllerType.GetMethod("Delete");
-        //    Assert.IsNotNull(methodInfo, "Method Delete does not exist in EmployeeController class");
-        //}
+        // Test to Check EmployeeController Controllers Method Search with parameter string Returns ActionResult
+        [Test]
+        public void EmployeeController_Search_Method_Invokes_with_string_Param_Returns_ActionResult()
+        {
+            string assemblyName = "dotnetapp";
+            string typeName = "dotnetapp.Controllers.EmployeeController";
+            Assembly assembly = Assembly.Load(assemblyName);
+            Type EmployeeControllerType = assembly.GetType(typeName);
+            object instance = Activator.CreateInstance(EmployeeControllerType);
+            MethodInfo methodInfo = EmployeeControllerType.GetMethod("Search", new Type[] { typeof(string) });
+            object result = methodInfo.Invoke(instance, new object[] { default(string) });
+            Assert.IsNotNull(result, "Result should not be null");
+        }
 
-        //[Test]
-        //public void EmployeeController_Edit_Method_Returns_NotFoundResult_When_Id_is_not_existing()
-        //{
-        //    string assemblyName = "dotnetapp";
-        //    string typeName = "dotnetapp.Controllers.EmployeeController";
-        //    Assembly assembly = Assembly.Load(assemblyName);
-        //    Type EmployeeControllerType = assembly.GetType(typeName);
-        //    var controller = Activator.CreateInstance(EmployeeControllerType);
+        [Test]
+        public void ShouldUseADONET_Classes_SqlCommand()
+        {
+            string assemblyName = "dotnetapp";
+            string typeName = "dotnetapp.Controllers.EmployeeController";
+            Assembly assembly1 = Assembly.Load(assemblyName);
+            Type CarserviceControllerType = assembly1.GetType(typeName);
+            var assembly = Assembly.GetAssembly(CarserviceControllerType);
+            var types = assembly.GetTypes();
 
-        //    MethodInfo methodInfo = EmployeeControllerType.GetMethod("Edit", new Type[] { typeof(int) });
-        //    // Act
-        //    var result = methodInfo.Invoke(controller, new object[] { 100 });
-        //    Console.WriteLine(result);
-        //    // Assert
-        //    Assert.IsNotNull(result);
-        //    Assert.IsInstanceOf<NotFoundResult>(result);
-        //}
+            // Act
+            var containsSqlCommand = types.Any(type =>
+                type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                    .SelectMany(method => method.GetMethodBody()?.LocalVariables.Cast<LocalVariableInfo>() ?? Enumerable.Empty<LocalVariableInfo>())
+                    .Any(variable => variable.LocalType == typeof(SqlCommand))
+            );
+
+            // Assert
+            Assert.IsTrue(containsSqlCommand, "SqlCommand is not used in the application.");
+        }
+
+        [Test]
+        public void ShouldUseADONET_Classes_SqlConnection()
+        {
+            string assemblyName = "dotnetapp";
+            string typeName = "dotnetapp.Controllers.EmployeeController";
+            Assembly assembly1 = Assembly.Load(assemblyName);
+            Type CarserviceControllerType = assembly1.GetType(typeName);
+            var assembly = Assembly.GetAssembly(CarserviceControllerType);
+            var types = assembly.GetTypes();
+
+            // Act
+            var containsSqlConnection = types.Any(type =>
+                type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                    .SelectMany(method => method.GetMethodBody()?.LocalVariables.Cast<LocalVariableInfo>() ?? Enumerable.Empty<LocalVariableInfo>())
+                    .Any(variable => variable.LocalType == typeof(SqlConnection))
+            );
+
+            // Assert
+            Assert.IsTrue(containsSqlConnection, "SqlConnection is not used in the application.");
+        }
+
 
     }
 }
