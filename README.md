@@ -1,2 +1,2 @@
 # html-css-js-project-scaffolding
-hello testing normal 5
+hello testing normal 6
